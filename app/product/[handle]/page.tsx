@@ -55,12 +55,22 @@ export default async function ProductPage(props: {
 
   if (!product) return notFound();
 
+  const imageUrls = [
+    ...new Set(
+      [product.featuredImage?.url, ...product.images.map((img) => img.url)].filter(
+        Boolean,
+      ) as string[],
+    ),
+  ];
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.title,
     description: product.description,
-    image: product.featuredImage.url,
+    ...(imageUrls.length
+      ? { image: imageUrls.length === 1 ? imageUrls[0] : imageUrls }
+      : {}),
     offers: {
       "@type": "AggregateOffer",
       availability: product.availableForSale
@@ -136,7 +146,11 @@ async function RelatedProducts({ id }: { id: string }) {
                   amount: product.priceRange.maxVariantPrice.amount,
                   currencyCode: product.priceRange.maxVariantPrice.currencyCode,
                 }}
-                src={product.featuredImage?.url}
+                src={
+                  product.featuredImage?.url ??
+                  product.images[0]?.url ??
+                  ""
+                }
                 fill
                 sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, (min-width: 475px) 50vw, 100vw"
               />

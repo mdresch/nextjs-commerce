@@ -16,7 +16,7 @@ export type CartProduct = {
   id: string;
   handle: string;
   title: string;
-  featuredImage: Image;
+  featuredImage: Maybe<Image>;
 };
 
 export type CartItem = {
@@ -128,7 +128,7 @@ export type ShopifyProduct = {
     minVariantPrice: Money;
   };
   variants: Connection<ProductVariant>;
-  featuredImage: Image;
+  featuredImage: Maybe<Image>;
   images: Connection<Image>;
   seo: SEO;
   tags: string[];
