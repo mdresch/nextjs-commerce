@@ -1,75 +1,109 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fcommerce&project-name=commerce&repo-name=commerce&demo-title=Next.js%20Commerce&demo-url=https%3A%2F%2Fdemo.vercel.store&demo-image=https%3A%2F%2Fbigcommerce-demo-asset-ksvtgfvnd.vercel.app%2Fbigcommerce.png&env=COMPANY_NAME,SHOPIFY_REVALIDATION_SECRET,SHOPIFY_STORE_DOMAIN,SHOPIFY_STOREFRONT_ACCESS_TOKEN,SITE_NAME)
+## Shopify headless storefront template (Next.js App Router)
 
-# Next.js Commerce
+This repo is a **Shopify headless storefront template** built with Next.js App Router and the Shopify Storefront API.
 
-A high-performance, server-rendered Next.js App Router ecommerce application.
+Use it as a **GitHub Template Repository** to quickly spin up new storefronts (digital books, templates, apps, etc.) without copying code manually.
 
-This template uses React Server Components, Server Actions, `Suspense`, `useOptimistic`, and more.
+### What’s included
 
-<h3 id="v1-note"></h3>
+- **Core storefront**: products, collections, cart, checkout redirect
+- **Shopify Pages**: pages are served at `/<handle>` (e.g. `/about`, `/contact`)
+- **Contact page form**: `/contact` shows a simple “mailto” form (see `CONTACT_EMAIL`)
+- **Blog**: `/blogs/<blogHandle>` and `/blogs/<blogHandle>/<articleHandle>`
+- **Book preview**: for book products, show a “Preview sample pages” modal
+- **Footer defaults**: appends common links (About, Contact, Privacy, Blog) when missing from the Shopify footer menu
+- **Landing variants**: 3 home page variants switchable via `LANDING_VARIANT`
 
-> Note: Looking for Next.js Commerce v1? View the [code](https://github.com/vercel/commerce/tree/v1), [demo](https://commerce-v1.vercel.store), and [release notes](https://github.com/vercel/commerce/releases/tag/v1).
+### Use this repo as a template (recommended)
 
-## Providers
+1. On GitHub, go to **Settings → General → Template repository** and enable it.
+2. Click **Use this template → Create a new repository**.
+3. In the new repo, set environment variables and point it to the new Shopify store.
 
-Vercel will only be actively maintaining a Shopify version [as outlined in our vision and strategy for Next.js Commerce](https://github.com/vercel/commerce/pull/966).
+### Requirements
 
-Vercel is happy to partner and work with any commerce provider to help them get a similar template up and running and listed below. Alternative providers should be able to fork this repository and swap out the `lib/shopify` file with their own implementation while leaving the rest of the template mostly unchanged.
+- **Node.js**: recent LTS
+- **pnpm**
+- **Shopify Storefront API access token** with content scope (blogs/articles) enabled
 
-- Shopify (this repository)
-- [BigCommerce](https://github.com/bigcommerce/nextjs-commerce) ([Demo](https://next-commerce-v2.vercel.app/))
-- [Ecwid by Lightspeed](https://github.com/Ecwid/ecwid-nextjs-commerce/) ([Demo](https://ecwid-nextjs-commerce.vercel.app/))
-- [Geins](https://github.com/geins-io/vercel-nextjs-commerce) ([Demo](https://geins-nextjs-commerce-starter.vercel.app/))
-- [Medusa](https://github.com/medusajs/vercel-commerce) ([Demo](https://medusa-nextjs-commerce.vercel.app/))
-- [Prodigy Commerce](https://github.com/prodigycommerce/nextjs-commerce) ([Demo](https://prodigy-nextjs-commerce.vercel.app/))
-- [Saleor](https://github.com/saleor/nextjs-commerce) ([Demo](https://saleor-commerce.vercel.app/))
-- [Shopware](https://github.com/shopwareLabs/vercel-commerce) ([Demo](https://shopware-vercel-commerce-react.vercel.app/))
-- [Swell](https://github.com/swellstores/verswell-commerce) ([Demo](https://verswell-commerce.vercel.app/))
-- [Umbraco](https://github.com/umbraco/Umbraco.VercelCommerce.Demo) ([Demo](https://vercel-commerce-demo.umbraco.com/))
-- [Wix](https://github.com/wix/headless-templates/tree/main/nextjs/commerce) ([Demo](https://wix-nextjs-commerce.vercel.app/))
-- [Fourthwall](https://github.com/FourthwallHQ/vercel-commerce) ([Demo](https://vercel-storefront.fourthwall.app/))
+### Environment variables
 
-> Note: Providers, if you are looking to use similar products for your demo, you can [download these assets](https://drive.google.com/file/d/1q_bKerjrwZgHwCw0ovfUMW6He9VtepO_/view?usp=sharing).
+Copy `.env.example` to `.env` and fill in at least:
 
-## Integrations
+- **`SHOPIFY_STORE_DOMAIN`**
+- **`SHOPIFY_STOREFRONT_ACCESS_TOKEN`**
 
-Integrations enable upgraded or additional functionality for Next.js Commerce
+Optional:
 
-- [Orama](https://github.com/oramasearch/nextjs-commerce) ([Demo](https://vercel-commerce.oramasearch.com/))
+- **`SITE_NAME`**, **`COMPANY_NAME`**
+- **`SHOPIFY_REVALIDATION_SECRET`**: used by `POST /api/revalidate` (Shopify webhooks)
+- **`CONTACT_EMAIL`**: recipient for the `/contact` mailto form
+- **`LANDING_VARIANT`**: `professional` | `traditional` | `surprise` (default: `professional`)
+- **`NEXT_PUBLIC_BLOG_PATH`**: blog link target used in the footer + landing CTAs (default: `/blogs/adpa`)
 
-  - Upgrades search to include typeahead with dynamic re-rendering, vector-based similarity search, and JS-based configuration.
-  - Search runs entirely in the browser for smaller catalogs or on a CDN for larger.
+> Do not commit `.env`.
 
-- [React Bricks](https://github.com/ReactBricks/nextjs-commerce-rb) ([Demo](https://nextjs-commerce.reactbricks.com/))
-  - Edit pages, product details, and footer content visually using [React Bricks](https://www.reactbricks.com) visual headless CMS.
-
-## Running locally
-
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js Commerce. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables) for this, but a `.env` file is all that is necessary.
-
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control your Shopify store.
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+### Run locally
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Your app should now be running on [localhost:3000](http://localhost:3000/).
+Open `http://localhost:3000`.
 
-<details>
-  <summary>Expand if you work at Vercel and want to run locally and / or contribute</summary>
+### Setup / Health check page (developer-only)
 
-1. Run `vc link`.
-1. Select the `Vercel Solutions` scope.
-1. Connect to the existing `commerce-shopify` project.
-1. Run `vc env pull` to get environment variables.
-1. Run `pnpm dev` to ensure everything is working correctly.
-</details>
+This template includes a simple health check page at:
 
-## Vercel, Next.js Commerce, and Shopify Integration Guide
+- `GET /health`
 
-You can use this comprehensive [integration guide](https://vercel.com/docs/integrations/ecommerce/shopify) with step-by-step instructions on how to configure Shopify as a headless CMS using Next.js Commerce as your headless Shopify storefront on Vercel.
+It is **not** linked in the storefront UI. Use it to verify env vars, menus, homepage collections, and blog access.
+
+### New store checklist (Shopify admin)
+
+#### 1) Collections used by the homepage
+
+Create these Shopify collections (the template expects them):
+
+- `hidden-homepage-featured-items` (at least 3 products)
+- `hidden-homepage-carousel` (several products)
+
+#### 2) Menus used by the theme
+
+The template reads these menu handles from Shopify:
+
+- Header: `next-js-frontend-header-menu`
+- Footer: `next-js-frontend-footer-menu`
+
+The footer will also append these paths if they’re missing:
+
+- `/about`
+- `/contact`
+- `/data-sharing-opt-out`
+- `NEXT_PUBLIC_BLOG_PATH` (defaults to `/blogs/adpa`)
+
+#### 3) Pages
+
+Create Shopify Pages with handles like:
+
+- `about` → `/about`
+- `contact` → `/contact`
+
+#### 4) Blog
+
+Create a Shopify blog (e.g. handle `adpa`) and publish posts:
+
+- Blog index: `/blogs/<blogHandle>`
+- Blog post: `/blogs/<blogHandle>/<postHandle>`
+
+#### 5) Book preview pages (optional)
+
+To show the preview button:
+
+- Mark a product as a book with **Product type** `Book`/`Books` or tag `book`.
+- Add sample-page images to product media and put **`[preview]`** in the image **alt text** to make them preview-only (excluded from the main gallery).
+
+### Production
+
+Deploy to your hosting (e.g. Vercel) and set the same environment variables there.
