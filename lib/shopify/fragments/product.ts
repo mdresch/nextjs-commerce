@@ -55,6 +55,7 @@ const productFragment = /* GraphQL */ `
       ...seo
     }
     tags
+    productType
     updatedAt
   }
   ${imageFragment}

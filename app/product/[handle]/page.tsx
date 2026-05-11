@@ -3,6 +3,11 @@ import Footer from "components/layout/footer";
 import { Gallery } from "components/product/gallery";
 import { ProductDescription } from "components/product/product-description";
 import { HIDDEN_PRODUCT_TAG } from "lib/constants";
+import {
+  getBookGalleryImages,
+  getGalleryImagesForProduct,
+  isBookProduct,
+} from "lib/product-book";
 import { getProduct, getProductRecommendations } from "lib/shopify";
 import type { Image } from "lib/shopify/types";
 import type { Metadata } from "next";
@@ -55,11 +60,14 @@ export default async function ProductPage(props: {
 
   if (!product) return notFound();
 
+  const isBook = isBookProduct(product);
+  const schemaGalleryImages = getBookGalleryImages(product.images, isBook);
   const imageUrls = [
     ...new Set(
-      [product.featuredImage?.url, ...product.images.map((img) => img.url)].filter(
-        Boolean,
-      ) as string[],
+      [
+        product.featuredImage?.url,
+        ...schemaGalleryImages.map((img) => img.url),
+      ].filter(Boolean) as string[],
     ),
   ];
 
@@ -99,10 +107,12 @@ export default async function ProductPage(props: {
               }
             >
               <Gallery
-                images={product.images.slice(0, 5).map((image: Image) => ({
-                  src: image.url,
-                  altText: image.altText,
-                }))}
+                images={getGalleryImagesForProduct(product).map(
+                  (image: Image) => ({
+                    src: image.url,
+                    altText: image.altText,
+                  }),
+                )}
               />
             </Suspense>
           </div>
@@ -146,11 +156,7 @@ async function RelatedProducts({ id }: { id: string }) {
                   amount: product.priceRange.maxVariantPrice.amount,
                   currencyCode: product.priceRange.maxVariantPrice.currencyCode,
                 }}
-                src={
-                  product.featuredImage?.url ??
-                  product.images[0]?.url ??
-                  ""
-                }
+                src={product.featuredImage?.url ?? product.images[0]?.url ?? ""}
                 fill
                 sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, (min-width: 475px) 50vw, 100vw"
               />

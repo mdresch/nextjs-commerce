@@ -30,3 +30,71 @@ input,
 button {
   @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50 dark:focus-visible:ring-neutral-600 dark:focus-visible:ring-offset-neutral-900;
 }
+
+/* Landing: “surprise” variant atmosphere */
+.landing-aurora-blobs {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(139, 92, 246, 0.35), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(244, 114, 182, 0.22), transparent),
+    radial-gradient(ellipse 50% 60% at 60% 80%, rgba(56, 189, 248, 0.12), transparent);
+  animation: landing-blob-drift 18s ease-in-out infinite;
+}
+
+@keyframes landing-blob-drift {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1) translate(0, 0);
+  }
+  33% {
+    opacity: 0.92;
+    transform: scale(1.03) translate(2%, -1%);
+  }
+  66% {
+    opacity: 0.96;
+    transform: scale(0.98) translate(-1%, 2%);
+  }
+}
+
+.landing-glow-btn {
+  animation: landing-glow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes landing-glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 40px -10px rgba(139, 92, 246, 0.45),
+      0 0 0 0 rgba(244, 114, 182, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 14px 48px -8px rgba(244, 114, 182, 0.4),
+      0 0 24px 4px rgba(139, 92, 246, 0.15);
+  }
+}
+
+.landing-float-section > section > * {
+  animation: landing-card-rise 0.9s ease-out both;
+}
+
+.landing-float-section > section > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.landing-float-section > section > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.landing-float-section > section > *:nth-child(3) {
+  animation-delay: 0.19s;
+}
+
+@keyframes landing-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

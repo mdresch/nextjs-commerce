@@ -25,6 +25,7 @@ import {
   getCollectionsQuery,
 } from "./queries/collection";
 import { getMenuQuery } from "./queries/menu";
+import { getBlogArticleQuery, getBlogQuery, getBlogsSitemapQuery } from "./queries/blog";
 import { getPageQuery, getPagesQuery } from "./queries/page";
 import {
   getProductQuery,
@@ -32,6 +33,9 @@ import {
   getProductsQuery,
 } from "./queries/product";
 import {
+  BlogArticle,
+  BlogArticleSummary,
+  BlogIndex,
   Cart,
   Collection,
   Connection,
@@ -40,6 +44,11 @@ import {
   Page,
   Product,
   ShopifyAddToCartOperation,
+  ShopifyArticleRaw,
+  ShopifyBlog,
+  ShopifyBlogArticleOperation,
+  ShopifyBlogOperation,
+  ShopifyBlogsSitemapOperation,
   ShopifyCart,
   ShopifyCartOperation,
   ShopifyCollection,
@@ -440,6 +449,123 @@ export async function getPages(): Promise<Page[]> {
   return removeEdgesAndNodes(res.body.data.pages);
 }
 
+function stripEmptyHtml(html: string | null | undefined) {
+  if (!html) return "";
+  const text = html.replace(/<[^>]*>/g, "").trim();
+  return text.length ? html : "";
+}
+
+const reshapeBlogArticleSummary = (
+  article: ShopifyArticleRaw,
+): BlogArticleSummary => ({
+  id: article.id,
+  title: article.title,
+  handle: article.handle,
+  excerpt: article.excerpt ?? "",
+  excerptHtml: stripEmptyHtml(article.excerptHtml),
+  contentPreview: (article.content ?? "").trim(),
+  publishedAt: article.publishedAt,
+  author: article.author,
+  image: article.image,
+});
+
+const reshapeBlog = (blog: ShopifyBlog | null | undefined): BlogIndex | undefined => {
+  if (!blog) return undefined;
+  return {
+    id: blog.id,
+    title: blog.title,
+    handle: blog.handle,
+    seo: blog.seo,
+    articles: removeEdgesAndNodes(blog.articles).map(reshapeBlogArticleSummary),
+  };
+};
+
+export async function getBlog(handle: string): Promise<BlogIndex | undefined> {
+  "use cache";
+  cacheTag(TAGS.blogs);
+  cacheLife("days");
+
+  if (!endpoint) {
+    console.log(`Skipping getBlog for '${handle}' - Shopify not configured`);
+    return undefined;
+  }
+
+  const res = await shopifyFetch<ShopifyBlogOperation>({
+    query: getBlogQuery,
+    variables: { handle },
+  });
+
+  return reshapeBlog(res.body.data.blogByHandle);
+}
+
+export async function getBlogArticle(
+  blogHandle: string,
+  articleHandle: string,
+): Promise<BlogArticle | undefined> {
+  "use cache";
+  cacheTag(TAGS.blogs);
+  cacheLife("days");
+
+  if (!endpoint) {
+    console.log("Skipping getBlogArticle - Shopify not configured");
+    return undefined;
+  }
+
+  const res = await shopifyFetch<ShopifyBlogArticleOperation>({
+    query: getBlogArticleQuery,
+    variables: { blog: blogHandle, article: articleHandle },
+  });
+
+  const blog = res.body.data.blogByHandle;
+  const article = blog?.articleByHandle;
+  if (!blog || !article) return undefined;
+
+  return {
+    title: article.title,
+    handle: article.handle,
+    contentHtml: article.contentHtml ?? "",
+    excerpt: article.excerpt ?? "",
+    excerptHtml: stripEmptyHtml(article.excerptHtml),
+    publishedAt: article.publishedAt,
+    author: article.author,
+    image: article.image,
+    seo: article.seo ?? { title: "", description: "" },
+    blogTitle: blog.title,
+    blogHandle: blog.handle,
+  };
+}
+
+export async function getBlogRoutesForSitemap(): Promise<
+  { path: string; lastModified: string }[]
+> {
+  if (!endpoint) return [];
+
+  const res = await shopifyFetch<ShopifyBlogsSitemapOperation>({
+    query: getBlogsSitemapQuery,
+  });
+
+  const blogEdges = res.body.data.blogs?.edges ?? [];
+  const routes: { path: string; lastModified: string }[] = [];
+
+  for (const { node: blog } of blogEdges) {
+    const articleNodes = blog.articles.edges.map((e) => e.node);
+    const blogLastMod =
+      articleNodes[0]?.publishedAt ?? new Date().toISOString();
+    routes.push({
+      path: `/blogs/${blog.handle}`,
+      lastModified: blogLastMod,
+    });
+    for (const article of articleNodes) {
+      routes.push({
+        path: `/blogs/${blog.handle}/${article.handle}`,
+        lastModified: article.publishedAt,
+      });
+    }
+  }
+
+  return routes;
+}
+
 export async function getProduct(handle: string): Promise<Product | undefined> {
   "use cache";
   cacheTag(TAGS.products);
@@ -516,17 +642,23 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
     "products/delete",
     "products/update",
   ];
+  const articleWebhooks = [
+    "articles/create",
+    "articles/delete",
+    "articles/update",
+  ];
   const topic = (await headers()).get("x-shopify-topic") || "unknown";
   const secret = req.nextUrl.searchParams.get("secret");
   const isCollectionUpdate = collectionWebhooks.includes(topic);
   const isProductUpdate = productWebhooks.includes(topic);
+  const isArticleUpdate = articleWebhooks.includes(topic);
 
   if (!secret || secret !== process.env.SHOPIFY_REVALIDATION_SECRET) {
     console.error("Invalid revalidation secret.");
     return NextResponse.json({ status: 401 });
   }
 
-  if (!isCollectionUpdate && !isProductUpdate) {
+  if (!isCollectionUpdate && !isProductUpdate && !isArticleUpdate) {
     // We don't need to revalidate anything for any other topics.
     return NextResponse.json({ status: 200 });
   }
@@ -537,6 +669,10 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
 
   if (isProductUpdate) {
     revalidateTag(TAGS.products, "seconds");
+  }
+
+  if (isArticleUpdate) {
+    revalidateTag(TAGS.blogs, "seconds");
   }
 
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });

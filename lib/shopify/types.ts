@@ -132,6 +132,7 @@ export type ShopifyProduct = {
   images: Connection<Image>;
   seo: SEO;
   tags: string[];
+  productType: string;
   updatedAt: string;
 };
 
@@ -241,6 +242,96 @@ export type ShopifyPageOperation = {
 export type ShopifyPagesOperation = {
   data: {
     pages: Connection<Page>;
+  };
+};
+
+export type ArticleAuthor = {
+  name: string;
+};
+
+export type BlogArticleSummary = {
+  id: string;
+  title: string;
+  handle: string;
+  excerpt: string;
+  excerptHtml: string;
+  /** Plain-text preview from body when excerpt is empty (Storefront API). */
+  contentPreview: string;
+  publishedAt: string;
+  author: ArticleAuthor;
+  image: Maybe<Image>;
+};
+
+export type BlogIndex = {
+  id: string;
+  title: string;
+  handle: string;
+  seo: SEO;
+  articles: BlogArticleSummary[];
+};
+
+export type BlogArticle = {
+  title: string;
+  handle: string;
+  contentHtml: string;
+  excerpt: string;
+  excerptHtml: string;
+  publishedAt: string;
+  author: ArticleAuthor;
+  image: Maybe<Image>;
+  seo: SEO;
+  blogTitle: string;
+  blogHandle: string;
+};
+
+export type ShopifyArticleRaw = {
+  id: string;
+  title: string;
+  handle: string;
+  excerpt: string | null;
+  excerptHtml?: string | null;
+  /** Present on list query via content(truncateAt: n). */
+  content?: string | null;
+  publishedAt: string;
+  author: ArticleAuthor;
+  image: Maybe<Image>;
+  contentHtml?: string;
+  seo?: SEO;
+};
+
+export type ShopifyBlog = {
+  id: string;
+  title: string;
+  handle: string;
+  seo: SEO;
+  articles: Connection<ShopifyArticleRaw>;
+};
+
+export type ShopifyBlogOperation = {
+  data: { blogByHandle: ShopifyBlog | null };
+  variables: { handle: string };
+};
+
+export type ShopifyBlogArticleOperation = {
+  data: {
+    blogByHandle: {
+      title: string;
+      handle: string;
+      articleByHandle: ShopifyArticleRaw | null;
+    } | null;
+  };
+  variables: { blog: string; article: string };
+};
+
+export type ShopifyBlogsSitemapOperation = {
+  data: {
+    blogs: Connection<{
+      handle: string;
+      articles: Connection<{
+        handle: string;
+        publishedAt: string;
+      }>;
+    }>;
   };
 };
 

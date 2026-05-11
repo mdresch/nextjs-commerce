@@ -1,7 +1,9 @@
 import { AddToCart } from "components/cart/add-to-cart";
 import Price from "components/price";
 import Prose from "components/prose";
+import { getBookPreviewPages, isBookProduct } from "lib/product-book";
 import { Product } from "lib/shopify/types";
+import { BookPreviewButton } from "./book-preview-button";
 import { VariantSelector } from "./variant-selector";
 
 export function ProductDescription({ product }: { product: Product }) {
@@ -17,6 +19,12 @@ export function ProductDescription({ product }: { product: Product }) {
         </div>
       </div>
       <VariantSelector options={product.options} variants={product.variants} />
+      {isBookProduct(product) ? (
+        <BookPreviewButton
+          productTitle={product.title}
+          pages={getBookPreviewPages(product.images)}
+        />
+      ) : null}
       {product.descriptionHtml ? (
         <Prose
           className="mb-6 text-sm leading-tight dark:text-white/[60%]"
